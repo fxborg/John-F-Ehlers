@@ -10,7 +10,7 @@
 
 #include <MovingAverages.mqh>
 
-enum RANGE_MODE{CLOSE=1,HIGH_LOW=2, UP_DOWN=3};
+enum RANGE_MODE{CLOSE=1,HIGH_LOW=2};
 
 #property indicator_minimum 0
 #property indicator_maximum 100
@@ -23,16 +23,16 @@ enum RANGE_MODE{CLOSE=1,HIGH_LOW=2, UP_DOWN=3};
 #property indicator_levelcolor Silver
 
 #property indicator_buffers 41
-#property indicator_plots 1
+#property indicator_plots 3
 
 #property indicator_type1         DRAW_LINE
 #property indicator_color1        clrDodgerBlue
 #property indicator_width1 2
 
-input int InpKPeriod=5;  // K period
+input int InpKPeriod=8;  // K period
 input int InpDPeriod=3;  // D period
 input int InpSlowing=3;  // Slowing
-input RANGE_MODE InpRangeMode=UP_DOWN;     // High Low Method
+input RANGE_MODE InpRangeMode=HIGH_LOW;     // High Low Method
 input int EMAPeriod=34;
 
 int                  ma_period=10;                 // period of ma
@@ -105,14 +105,15 @@ int OnInit()
   {
    int n=0;
    SetIndexBuffer(n++,fish,INDICATOR_DATA);
-   SetIndexBuffer(n++,sig,INDICATOR_DATA);
+   SetIndexBuffer(n++,rainbow,INDICATOR_CALCULATIONS);
+   SetIndexBuffer(n++,rainbow_h,INDICATOR_CALCULATIONS);
+   SetIndexBuffer(n++,rainbow_l,INDICATOR_CALCULATIONS);
+
+   SetIndexBuffer(n++,sig,INDICATOR_CALCULATIONS);
    SetIndexBuffer(n++,sosc,INDICATOR_CALCULATIONS);
    SetIndexBuffer(n++,ema0,INDICATOR_CALCULATIONS);
    SetIndexBuffer(n++,osc,INDICATOR_CALCULATIONS);
    SetIndexBuffer(n++,ema1,INDICATOR_CALCULATIONS);
-   SetIndexBuffer(n++,rainbow,INDICATOR_CALCULATIONS);
-   SetIndexBuffer(n++,rainbow_h,INDICATOR_CALCULATIONS);
-   SetIndexBuffer(n++,rainbow_l,INDICATOR_CALCULATIONS);
 //--- 
    SetIndexBuffer(n++,wma0,INDICATOR_CALCULATIONS);
    SetIndexBuffer(n++,wma1,INDICATOR_CALCULATIONS);
@@ -184,18 +185,9 @@ int OnCalculate(const int rates_total,
 //---
    for(i=first; i<rates_total && !IsStopped(); i++)
      {
-      if(InpRangeMode==UP_DOWN)
-      {     
-         wma0[i]=(close[i]*2+close[i-1])/3;
-         wma0h[i]=((high[i]-close[i])*2+(high[i-1]-close[i-1]))/3;
-         wma0l[i]=((close[i]-low[i])*2+(close[i]-low[i-1]))/3;
-      }
-      else
-      {
-         wma0[i]=(close[i]*2+close[i-1])/3;   
-         wma0h[i]=(high[i]*2+high[i-1])/3;   
-         wma0l[i]=(low[i]*2+low[i-1])/3;
-      }
+      wma0[i]=(close[i]*2+close[i-1])/3;   
+      wma0h[i]=(high[i]*2+high[i-1])/3;   
+      wma0l[i]=(low[i]*2+low[i-1])/3;
       if(i<=begin_pos+1)continue;
       wma1[i]=(wma0[i]*2+wma0[i-1])/3;     wma1h[i]=(wma0h[i]*2+wma0h[i-1])/3;  wma1l[i]=(wma0l[i]*2+wma0l[i-1])/3;
       if(i<=begin_pos+2)continue;
@@ -218,18 +210,9 @@ int OnCalculate(const int rates_total,
       int i1st=begin_pos+10;
       if(i<=i1st)continue;
       rainbow[i]=(5*wma0[i]+4*wma1[i]+3*wma2[i]+2*wma3[i]+wma4[i]+wma5[i]+wma6[i]+wma7[i]+wma8[i]+wma9[i])/20.0;
-      if(InpRangeMode==UP_DOWN)
-      {     
-         double h =(5*wma0h[i]+4*wma1h[i]+3*wma2h[i]+2*wma3h[i]+wma4h[i]+wma5h[i]+wma6h[i]+wma7h[i]+wma8h[i]+wma9h[i])/20.0;
-         double l=(5*wma0l[i]+4*wma1l[i]+3*wma2l[i]+2*wma3l[i]+wma4l[i]+wma5l[i]+wma6l[i]+wma7l[i]+wma8l[i]+wma9l[i])/20.0;
-         rainbow_h[i]=rainbow[i]+h;
-         rainbow_l[i]=rainbow[i]-l;
-      }
-      else
-      {
-       rainbow_h[i]=(5*wma0h[i]+4*wma1h[i]+3*wma2h[i]+2*wma3h[i]+wma4h[i]+wma5h[i]+wma6h[i]+wma7h[i]+wma8h[i]+wma9h[i])/20.0;
-       rainbow_l[i]=(5*wma0l[i]+4*wma1l[i]+3*wma2l[i]+2*wma3l[i]+wma4l[i]+wma5l[i]+wma6l[i]+wma7l[i]+wma8l[i]+wma9l[i])/20.0;
-      }
+      rainbow_h[i]=(5*wma0h[i]+4*wma1h[i]+3*wma2h[i]+2*wma3h[i]+wma4h[i]+wma5h[i]+wma6h[i]+wma7h[i]+wma8h[i]+wma9h[i])/20.0;
+      rainbow_l[i]=(5*wma0l[i]+4*wma1l[i]+3*wma2l[i]+2*wma3l[i]+wma4l[i]+wma5l[i]+wma6l[i]+wma7l[i]+wma8l[i]+wma9l[i])/20.0;
+
       int i2nd=i1st+InpKPeriod+1;
       if(i<=i2nd)continue;
       double dmax=0,dmin=0;
