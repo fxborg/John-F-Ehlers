@@ -20,14 +20,14 @@ const double PI=3.14159265359;
 
 #property indicator_type1         DRAW_LINE
 #property indicator_color1        clrDodgerBlue
-#property indicator_width1 3
+#property indicator_width1 2
 #property indicator_type2         DRAW_LINE
 #property indicator_color2        clrCyan
 #property indicator_width2 1
 #property indicator_style2        STYLE_DOT
 #property indicator_type3         DRAW_LINE
 #property indicator_color3        clrRed
-#property indicator_width3 3
+#property indicator_width3 2
 #property indicator_type4         DRAW_LINE
 #property indicator_color4        clrOrange
 #property indicator_width4 1
@@ -96,8 +96,7 @@ int OnCalculate(const int rates_total,
   {
 //---
    int i,first;
-   if(rates_total<=min_rates_total)
-      return(0);
+   if(rates_total<=min_rates_total) return(0);
 //---
    int begin_pos=min_rates_total;
 
